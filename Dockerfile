@@ -1,9 +1,9 @@
 # Multi-stage Dockerfile for API Manager Backend Production
-FROM node:18-slim AS base
+FROM node:18-alpine AS base
 
 # Install dependencies only when needed
 FROM base AS deps
-RUN apt-get update && apt-get install -y libssl3 && rm -rf /var/lib/apt/lists/**
+RUN apk add --no-cache libc6-compat openssl
 WORKDIR /app
 
 # Copy package files
@@ -22,6 +22,9 @@ RUN npx prisma generate
 # Production image
 FROM base AS runner
 WORKDIR /app
+
+# Install OpenSSL for Prisma
+RUN apk add --no-cache openssl
 
 ENV NODE_ENV=production
 ENV PORT=8000
