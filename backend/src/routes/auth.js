@@ -182,9 +182,12 @@ router.post('/login', [
     });
   }
 
-  // Generate JWT token
+  // Generate JWT token with unique identifier
   const token = jwt.sign(
-    { userId: user.id },
+    { 
+      userId: user.id,
+      sessionId: uuidv4() // Add unique session ID
+    },
     process.env.JWT_SECRET,
     { expiresIn: '24h' }
   );

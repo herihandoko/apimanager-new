@@ -73,24 +73,26 @@ const swaggerSpec = swaggerJsdoc(swaggerOptions);
 // Rate limiting - more lenient for development
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: process.env.NODE_ENV === 'development' ? 1000 : 100, // 1000 for dev, 100 for prod
+  max: process.env.NODE_ENV === 'development' ? 1000 : 500, // 1000 for dev, 500 for prod
   message: 'Too many requests from this IP, please try again later.',
   standardHeaders: true,
   legacyHeaders: false,
   skip: (req) => {
-    // Skip rate limiting for health checks and static files
-    return req.path === '/health' || req.path.startsWith('/static/');
+    // Skip rate limiting for health checks, static files, and auth endpoints
+    const skipPaths = ['/health', '/static/', '/api/auth/'];
+    return skipPaths.some(path => req.path.startsWith(path));
   },
 });
 
 // Speed limiting - disabled for development
 const speedLimiter = slowDown({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  delayAfter: process.env.NODE_ENV === 'development' ? 500 : 50, // 500 for dev, 50 for prod
-  delayMs: () => process.env.NODE_ENV === 'development' ? 100 : 500, // 100ms for dev, 500ms for prod
+  delayAfter: process.env.NODE_ENV === 'development' ? 500 : 200, // 500 for dev, 200 for prod
+  delayMs: () => process.env.NODE_ENV === 'development' ? 100 : 200, // 100ms for dev, 200ms for prod
   skip: (req) => {
-    // Skip speed limiting for health checks and static files
-    return req.path === '/health' || req.path.startsWith('/static/');
+    // Skip speed limiting for health checks, static files, and auth endpoints
+    const skipPaths = ['/health', '/static/', '/api/auth/'];
+    return skipPaths.some(path => req.path.startsWith(path));
   },
 });
 
@@ -98,16 +100,32 @@ const speedLimiter = slowDown({
 app.use(helmet());
 app.use(compression());
 app.use(morgan('combined'));
+// Parse CORS origins
+const corsOrigins = process.env.CORS_ORIGIN 
+  ? process.env.CORS_ORIGIN.split(',').map(origin => origin.trim())
+  : ['http://localhost:3000', 'http://localhost:3001'];
+
 app.use(cors({
-  origin: process.env.CORS_ORIGIN || ['http://localhost:3000', 'http://localhost:3001'],
+  origin: corsOrigins,
   credentials: true,
 }));
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
-// Apply rate limiting to all routes
-app.use(limiter);
-app.use(speedLimiter);
+// Apply rate limiting to all routes except auth
+app.use((req, res, next) => {
+  if (req.path.startsWith('/api/auth/')) {
+    return next();
+  }
+  return limiter(req, res, next);
+});
+
+app.use((req, res, next) => {
+  if (req.path.startsWith('/api/auth/')) {
+    return next();
+  }
+  return speedLimiter(req, res, next);
+});
 
 // Health check endpoint
 app.get('/health', (req, res) => {
@@ -148,6 +166,18 @@ app.use('*', (req, res) => {
 
 // Error handling middleware
 app.use(errorHandler);
+
+// Handle unhandled promise rejections
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('Unhandled Rejection at:', promise, 'reason:', reason);
+  // Don't exit the process, just log the error
+});
+
+// Handle uncaught exceptions
+process.on('uncaughtException', (error) => {
+  console.error('Uncaught Exception:', error);
+  // Don't exit the process, just log the error
+});
 
 // Graceful shutdown
 process.on('SIGTERM', async () => {

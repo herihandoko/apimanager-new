@@ -8,8 +8,8 @@ services:
     restart: unless-stopped
     environment:
       POSTGRES_DB: apimanager
-      POSTGRES_USER: apimanager
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-apimanager123}
+      POSTGRES_USER: apimanager_user
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-apimanager_password}
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./backend/prisma/migrations:/docker-entrypoint-initdb.d
@@ -18,7 +18,7 @@ services:
     networks:
       - apimanager-network
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U apimanager"]
+      test: ["CMD-SHELL", "pg_isready -U apimanager_user"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -49,9 +49,9 @@ services:
     container_name: apimanager-backend
     restart: unless-stopped
     environment:
-      NODE_ENV: production
+      NODE_ENV: development
       PORT: 8000
-      DATABASE_URL: postgresql://apimanager:${POSTGRES_PASSWORD:-apimanager123}@postgres:5432/apimanager
+      DATABASE_URL: postgresql://apimanager_user:${POSTGRES_PASSWORD:-apimanager_password}@postgres:5432/apimanager
       REDIS_URL: redis://redis:6379
       JWT_SECRET: ${JWT_SECRET:-your-super-secret-jwt-key-change-in-production}
       CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost:3000,http://localhost:3001}
@@ -84,7 +84,7 @@ services:
     environment:
       VITE_API_BASE_URL: ${VITE_API_BASE_URL:-http://localhost:8000}
     ports:
-      - "80:80"
+      - "3001:80"
     depends_on:
       - backend
     networks:

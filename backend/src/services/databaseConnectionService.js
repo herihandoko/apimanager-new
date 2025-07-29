@@ -16,7 +16,14 @@ class DatabaseConnectionService {
     return new Promise((resolve, reject) => {
       const sshClient = new Client();
       
+      // Set timeout for SSH connection (10 seconds)
+      const timeout = setTimeout(() => {
+        sshClient.end();
+        reject(new Error('SSH connection timeout after 10 seconds'));
+      }, 10000);
+      
       sshClient.on('ready', () => {
+        clearTimeout(timeout);
         // Use the database host and port for forwarding
         const dbHost = tunnelConfig.dbHost || 'localhost';
         const dbPort = tunnelConfig.dbPort || 3306;
@@ -28,18 +35,25 @@ class DatabaseConnectionService {
           dbPort,
           (err, stream) => {
             if (err) {
+              sshClient.end();
               reject(err);
               return;
             }
             resolve({ sshClient, stream });
           }
         );
+      }).on('error', (err) => {
+        clearTimeout(timeout);
+        reject(err);
       }).connect({
         host: tunnelConfig.sshHost,
         port: tunnelConfig.sshPort || 22,
         username: tunnelConfig.sshUsername,
         password: tunnelConfig.sshPassword,
-        privateKey: tunnelConfig.sshPrivateKey
+        privateKey: tunnelConfig.sshPrivateKey,
+        readyTimeout: 10000, // 10 second timeout
+        keepaliveInterval: 10000,
+        keepaliveCountMax: 3
       });
     });
   }
@@ -67,53 +81,58 @@ class DatabaseConnectionService {
 
     let connection;
 
-    if (connectionConfig.useTunnel) {
-      // Create SSH tunnel
-      const tunnelConfig = {
-        ...connectionConfig.tunnelConfig,
-        dbHost: connectionConfig.host,
-        dbPort: connectionConfig.port
-      };
-      const { sshClient, stream } = await this.createSSHTunnel(tunnelConfig);
-      
-      connection = await mysql.createConnection({
-        host: '127.0.0.1',
-        port: tunnelConfig.localPort || 3306,
-        user: connectionConfig.username,
-        password: connectionConfig.password,
-        database: connectionConfig.database,
-        ssl: connectionConfig.useSSL ? {} : false,
-        stream: stream
-      });
+    try {
+      if (connectionConfig.useTunnel) {
+        // Create SSH tunnel
+        const tunnelConfig = {
+          ...connectionConfig.tunnelConfig,
+          dbHost: connectionConfig.host,
+          dbPort: connectionConfig.port
+        };
+        const { sshClient, stream } = await this.createSSHTunnel(tunnelConfig);
+        
+        connection = await mysql.createConnection({
+          host: '127.0.0.1',
+          port: tunnelConfig.localPort || 3306,
+          user: connectionConfig.username,
+          password: connectionConfig.password,
+          database: connectionConfig.database,
+          ssl: connectionConfig.useSSL ? {} : false,
+          stream: stream
+        });
 
-      // Store SSH client for cleanup
-      connection.sshClient = sshClient;
-    } else {
-      // Direct connection
-      connection = await mysql.createConnection({
-        host: connectionConfig.host,
-        port: connectionConfig.port,
-        user: connectionConfig.username,
-        password: connectionConfig.password,
-        database: connectionConfig.database,
-        ssl: connectionConfig.useSSL ? {} : false
-      });
-    }
-
-    // Cache the connection
-    connectionCache.set(connectionId, connection);
-    
-    // Log connection
-    await prisma.databaseConnectionLog.create({
-      data: {
-        connectionId,
-        action: 'connect',
-        status: 'success',
-        duration: Date.now()
+        // Store SSH client for cleanup
+        connection.sshClient = sshClient;
+      } else {
+        // Direct connection
+        connection = await mysql.createConnection({
+          host: connectionConfig.host,
+          port: connectionConfig.port,
+          user: connectionConfig.username,
+          password: connectionConfig.password,
+          database: connectionConfig.database,
+          ssl: connectionConfig.useSSL ? {} : false
+        });
       }
-    });
 
-    return connection;
+      // Cache the connection
+      connectionCache.set(connectionId, connection);
+      
+      // Log connection
+      await prisma.databaseConnectionLog.create({
+        data: {
+          connectionId,
+          action: 'connect',
+          status: 'success',
+          duration: Date.now()
+        }
+      });
+
+      return connection;
+    } catch (error) {
+      console.error('Error creating database connection:', error.message);
+      throw error;
+    }
   }
 
   // Execute query
@@ -219,11 +238,11 @@ class DatabaseConnectionService {
     let timeoutId;
 
     try {
-      // Set timeout for test connection (5 seconds)
+      // Set timeout for test connection (10 seconds)
       const timeoutPromise = new Promise((_, reject) => {
         timeoutId = setTimeout(() => {
-          reject(new Error('Connection test timeout after 5 seconds'));
-        }, 5000);
+          reject(new Error('Connection test timeout after 10 seconds'));
+        }, 10000);
       });
 
       const connectionPromise = (async () => {
@@ -264,13 +283,22 @@ class DatabaseConnectionService {
       return result;
     } catch (error) {
       if (timeoutId) clearTimeout(timeoutId);
+      console.log('Connection test failed for connection', connectionConfig.id || 'unknown', ':', error.message);
       return { success: false, message: error.message };
     } finally {
       if (connection) {
-        await connection.end();
+        try {
+          await connection.end();
+        } catch (closeError) {
+          console.log('Error closing connection:', closeError.message);
+        }
       }
       if (sshClient) {
-        sshClient.end();
+        try {
+          sshClient.end();
+        } catch (closeError) {
+          console.log('Error closing SSH client:', closeError.message);
+        }
       }
     }
   }

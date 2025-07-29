@@ -70,10 +70,6 @@ export default function Layout() {
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 lg:flex">
-      {/* Debug info */}
-      <div className="fixed top-0 right-0 z-[9998] bg-red-500 text-white p-2 text-xs">
-        Debug: {isAuthenticated ? 'Auth' : 'No Auth'} | {location.pathname}
-      </div>
 
       {/* Sidebar */}
       <div className={cn(
