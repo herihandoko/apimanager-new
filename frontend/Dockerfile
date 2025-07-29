@@ -1,24 +1,35 @@
-FROM node:18-alpine
+# Multi-stage Dockerfile for API Manager Frontend Production
+FROM node:18-alpine AS base
 
+# Install dependencies only when needed
+FROM base AS deps
+RUN apk add --no-cache libc6-compat
 WORKDIR /app
 
 # Copy package files
-COPY package*.json ./
+COPY package.json package-lock.json* ./
+RUN npm ci
 
-# Install dependencies
-RUN npm install
-
-# Copy source code
+# Build stage
+FROM base AS builder
+WORKDIR /app
+COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
 # Build the application
 RUN npm run build
 
-# Install serve to run the built app
-RUN npm install -g serve
+# Production image
+FROM nginx:alpine AS runner
+
+# Copy built application
+COPY --from=builder /app/dist /usr/share/nginx/html
+
+# Copy nginx configuration
+COPY nginx.conf /etc/nginx/nginx.conf
 
 # Expose port
-EXPOSE 3000
+EXPOSE 80
 
-# Start the application
-CMD ["serve", "-s", "dist", "-l", "3000"] 
+# Start nginx
+CMD ["nginx", "-g", "daemon off;"] 

@@ -4,99 +4,125 @@ services:
   # PostgreSQL Database
   postgres:
     image: postgres:15-alpine
-    container_name: apimanager-postgres-prod
+    container_name: apimanager-postgres
+    restart: unless-stopped
     environment:
       POSTGRES_DB: apimanager
-      POSTGRES_USER: apimanager_user
-      POSTGRES_PASSWORD: apimanager_password
+      POSTGRES_USER: apimanager
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-apimanager123}
     volumes:
-      - postgres_data_prod:/var/lib/postgresql/data
-      - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql
+      - postgres_data:/var/lib/postgresql/data
+      - ./backend/prisma/migrations:/docker-entrypoint-initdb.d
     ports:
       - "5432:5432"
     networks:
       - apimanager-network
-    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U apimanager"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
 
-  # Redis for caching and sessions
+  # Redis Cache
   redis:
     image: redis:7-alpine
-    container_name: apimanager-redis-prod
+    container_name: apimanager-redis
+    restart: unless-stopped
+    command: redis-server --appendonly yes
+    volumes:
+      - redis_data:/data
     ports:
       - "6379:6379"
-    volumes:
-      - redis_data_prod:/data
     networks:
       - apimanager-network
-    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
 
-  # Backend API Server
+  # Backend API
   backend:
     build:
-      context: ./backend
+      context: .
       dockerfile: Dockerfile
-    container_name: apimanager-backend-prod
+    container_name: apimanager-backend
+    restart: unless-stopped
     environment:
       NODE_ENV: production
-      DATABASE_URL: postgresql://apimanager_user:apimanager_password@postgres:5432/apimanager
-      REDIS_URL: redis://redis:6379
-      JWT_SECRET: your-super-secret-jwt-key-change-in-production
       PORT: 8000
-      CORS_ORIGIN: http://localhost:3000
+      DATABASE_URL: postgresql://apimanager:${POSTGRES_PASSWORD:-apimanager123}@postgres:5432/apimanager
+      REDIS_URL: redis://redis:6379
+      JWT_SECRET: ${JWT_SECRET:-your-super-secret-jwt-key-change-in-production}
+      CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost:3000,http://localhost:3001}
+      API_BASE_URL: ${API_BASE_URL:-http://localhost:8000}
     ports:
       - "8000:8000"
-    volumes:
-      - ./backend:/app
-      - /app/node_modules
     depends_on:
-      - postgres
-      - redis
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
     networks:
       - apimanager-network
-    restart: unless-stopped
-    command: npm start
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    volumes:
+      - ./backend/uploads:/app/uploads
+      - ./backend/logs:/app/logs
 
-  # Frontend React Application
+  # Frontend
   frontend:
     build:
       context: ./frontend
       dockerfile: Dockerfile
-    container_name: apimanager-frontend-prod
+    container_name: apimanager-frontend
+    restart: unless-stopped
     environment:
-      VITE_API_URL: http://localhost:8000/api
-      VITE_APP_NAME: API Manager
+      VITE_API_BASE_URL: ${VITE_API_BASE_URL:-http://localhost:8000}
     ports:
-      - "3000:3000"
-    volumes:
-      - ./frontend:/app
-      - /app/node_modules
+      - "80:80"
     depends_on:
       - backend
     networks:
       - apimanager-network
-    restart: unless-stopped
-    command: serve -s dist -l 3000
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
 
-  # Nginx Reverse Proxy
+  # Nginx Reverse Proxy (Optional)
   nginx:
     image: nginx:alpine
-    container_name: apimanager-nginx-prod
+    container_name: apimanager-nginx
+    restart: unless-stopped
     ports:
-      - "8080:80"
-      - "8443:443"
+      - "443:443"
+      - "80:80"
     volumes:
       - ./nginx/nginx.conf:/etc/nginx/nginx.conf
       - ./nginx/ssl:/etc/nginx/ssl
+      - ./nginx/logs:/var/log/nginx
     depends_on:
       - frontend
       - backend
     networks:
       - apimanager-network
-    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
 
 volumes:
-  postgres_data_prod:
-  redis_data_prod:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
 
 networks:
   apimanager-network:
