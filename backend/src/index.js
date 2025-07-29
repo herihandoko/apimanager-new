@@ -98,11 +98,11 @@ const speedLimiter = slowDown({
 app.use(helmet());
 app.use(compression());
 app.use(morgan('combined'));
-app.use(cors({
-  origin: process.env.CORS_ORIGIN || ['http://localhost:3000', 'http://localhost:3001'],
-  credentials: true,
-}));
+// app.use(cors({
+//   origin: process.env.CORS_ORIGIN || ['http://localhost:3000', 'http://localhost:3001'],
+//   credentials: true,
 app.use(express.json({ limit: '10mb' }));
+// });
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 // Apply rate limiting to all routes
@@ -117,7 +117,7 @@ app.get('/health', (req, res) => {
     uptime: process.uptime(),
     environment: process.env.NODE_ENV,
   });
-});
+// });
 
 // API Documentation
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
@@ -143,8 +143,8 @@ app.use('*', (req, res) => {
     success: false,
     message: 'Route not found',
     path: req.originalUrl,
-  });
-});
+  // });
+// });
 
 // Error handling middleware
 app.use(errorHandler);
@@ -154,13 +154,13 @@ process.on('SIGTERM', async () => {
   console.log('SIGTERM received, shutting down gracefully');
   await prisma.$disconnect();
   process.exit(0);
-});
+// });
 
 process.on('SIGINT', async () => {
   console.log('SIGINT received, shutting down gracefully');
   await prisma.$disconnect();
   process.exit(0);
-});
+// });
 
 // Database connection test
 async function testDatabaseConnection() {
@@ -184,10 +184,10 @@ async function startServer() {
     console.log(`📚 API Documentation: http://localhost:${PORT}/api-docs`);
     console.log(`🏥 Health Check: http://localhost:${PORT}/health`);
     console.log(`🌍 Environment: ${process.env.NODE_ENV || 'development'}`);
-  });
+  // });
 }
 
 startServer().catch((error) => {
   console.error('❌ Failed to start server:', error);
   process.exit(1);
-}); 
+// }); 
