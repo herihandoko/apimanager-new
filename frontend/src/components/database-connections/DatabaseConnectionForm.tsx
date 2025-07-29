@@ -5,19 +5,7 @@ import { Textarea } from '@/components/ui/Textarea';
 import { Checkbox } from '@/components/ui/Checkbox';
 import api from '@/services/api';
 
-interface DatabaseConnection {
-  id: string;
-  name: string;
-  description: string;
-  host: string;
-  port: number;
-  database: string;
-  username: string;
-  password: string;
-  useSSL: boolean;
-  useTunnel: boolean;
-  tunnelConfig: any;
-}
+import { DatabaseConnection } from '@/types/database';
 
 interface DatabaseConnectionFormProps {
   connection?: DatabaseConnection | null;
@@ -56,7 +44,7 @@ export default function DatabaseConnectionForm({ connection, onSuccess }: Databa
         port: connection.port,
         database: connection.database,
         username: connection.username,
-        password: connection.password,
+        password: connection.password || '',
         useSSL: connection.useSSL,
         useTunnel: connection.useTunnel,
         tunnelConfig: connection.tunnelConfig || {

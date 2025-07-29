@@ -43,7 +43,7 @@ export default function DynamicQueryForm({ query, onSuccess }: DynamicQueryFormP
     query: '',
     method: 'GET',
     path: '',
-    parameters: [],
+    parameters: [] as any[],
     responseFormat: 'json',
     cacheEnabled: false,
     cacheDuration: 300,

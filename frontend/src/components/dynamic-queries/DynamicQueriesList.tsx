@@ -20,6 +20,7 @@ interface DynamicQuery {
   cacheDuration: number;
   rateLimit: number;
   isActive: boolean;
+  connectionId: string;
   createdAt: string;
   updatedAt: string;
   connection: {

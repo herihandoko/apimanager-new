@@ -15,8 +15,10 @@ interface DatabaseConnection {
   port: number;
   database: string;
   username: string;
+  password?: string;
   useSSL: boolean;
   useTunnel: boolean;
+  tunnelConfig?: any;
   isActive: boolean;
   createdAt: string;
   updatedAt: string;
