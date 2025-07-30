@@ -1,671 +1,721 @@
 {
-  "info": {
-    "name": "API Manager Collection",
-    "description": "Complete API collection for API Manager platform",
-    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
-  },
-  "variable": [
-    {
-      "key": "base_url",
-      "value": "http://localhost:8000",
-      "type": "string"
-    },
-    {
-      "key": "frontend_url",
-      "value": "http://localhost:3000",
-      "type": "string"
-    },
-    {
-      "key": "jwt_token",
-      "value": "",
-      "type": "string"
-    },
-    {
-      "key": "api_key",
-      "value": "",
-      "type": "string"
-    }
-  ],
-  "auth": {
-    "type": "bearer",
-    "bearer": [
-      {
-        "key": "token",
-        "value": "{{jwt_token}}",
-        "type": "string"
-      }
-    ]
-  },
-  "item": [
-    {
-      "name": "🔐 Authentication",
-      "item": [
-        {
-          "name": "Login",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"email\": \"admin@apimanager.com\",\n  \"password\": \"admin123\"\n}"
-            },
-            "url": {
-              "raw": "{{base_url}}/api/auth/login",
-              "host": ["{{base_url}}"],
-              "path": ["api", "auth", "login"]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Register",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"name\": \"Test User\",\n  \"email\": \"test@example.com\",\n  \"password\": \"password123\",\n  \"roleId\": \"1\"\n}"
-            },
-            "url": {
-              "raw": "{{base_url}}/api/auth/register",
-              "host": ["{{base_url}}"],
-              "path": ["api", "auth", "register"]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Refresh Token",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"refreshToken\": \"your_refresh_token_here\"\n}"
-            },
-            "url": {
-              "raw": "{{base_url}}/api/auth/refresh",
-              "host": ["{{base_url}}"],
-              "path": ["api", "auth", "refresh"]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Logout",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"refreshToken\": \"your_refresh_token_here\"\n}"
-            },
-            "url": {
-              "raw": "{{base_url}}/api/auth/logout",
-              "host": ["{{base_url}}"],
-              "path": ["api", "auth", "logout"]
-            }
-          },
-          "response": []
-        }
-      ]
-    },
-    {
-      "name": "🔑 API Keys",
-      "item": [
-        {
-          "name": "Get All API Keys",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{base_url}}/api/apikeys",
-              "host": ["{{base_url}}"],
-              "path": ["api", "apikeys"]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Create API Key",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"name\": \"My API Key\",\n  \"description\": \"API Key for testing\",\n  \"permissions\": [\"read\", \"write\"],\n  \"expiresAt\": \"2024-12-31T23:59:59.000Z\",\n  \"ipWhitelist\": [\"192.168.1.1\"]\n}"
-            },
-            "url": {
-              "raw": "{{base_url}}/api/apikeys",
-              "host": ["{{base_url}}"],
-              "path": ["api", "apikeys"]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Get API Key by ID",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{base_url}}/api/apikeys/{{api_key_id}}",
-              "host": ["{{base_url}}"],
-              "path": ["api", "apikeys", "{{api_key_id}}"]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Update API Key",
-          "request": {
-            "method": "PUT",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"name\": \"Updated API Key\",\n  \"description\": \"Updated description\",\n  \"isActive\": true\n}"
-            },
-            "url": {
-              "raw": "{{base_url}}/api/apikeys/{{api_key_id}}",
-              "host": ["{{base_url}}"],
-              "path": ["api", "apikeys", "{{api_key_id}}"]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Delete API Key",
-          "request": {
-            "method": "DELETE",
-            "header": [],
-            "url": {
-              "raw": "{{base_url}}/api/apikeys/{{api_key_id}}",
-              "host": ["{{base_url}}"],
-              "path": ["api", "apikeys", "{{api_key_id}}"]
-            }
-          },
-          "response": []
-        }
-      ]
-    },
-    {
-      "name": "🌐 External APIs",
-      "item": [
-        {
-          "name": "Get All External APIs",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{base_url}}/api/external-apis",
-              "host": ["{{base_url}}"],
-              "path": ["api", "external-apis"]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Create External API",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"name\": \"Weather API\",\n  \"description\": \"Weather service API\",\n  \"baseUrl\": \"https://api.weatherapi.com\",\n  \"endpoint\": \"/v1/current.json\",\n  \"method\": \"GET\",\n  \"requiresAuth\": true,\n  \"authType\": \"api_key\",\n  \"authConfig\": {\n    \"headerName\": \"X-API-Key\",\n    \"headerValue\": \"your_weather_api_key\"\n  },\n  \"rateLimit\": 100,\n  \"timeout\": 5000,\n  \"isActive\": true\n}"
-            },
-            "url": {
-              "raw": "{{base_url}}/api/external-apis",
-              "host": ["{{base_url}}"],
-              "path": ["api", "external-apis"]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Test External API",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"params\": {\n    \"q\": \"London\",\n    \"aqi\": \"no\"\n  },\n  \"body\": {}\n}"
-            },
-            "url": {
-              "raw": "{{base_url}}/api/external-apis/{{external_api_id}}/test",
-              "host": ["{{base_url}}"],
-              "path": ["api", "external-apis", "{{external_api_id}}", "test"]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Update External API",
-          "request": {
-            "method": "PUT",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"name\": \"Updated Weather API\",\n  \"description\": \"Updated weather service\",\n  \"isActive\": true\n}"
-            },
-            "url": {
-              "raw": "{{base_url}}/api/external-apis/{{external_api_id}}",
-              "host": ["{{base_url}}"],
-              "path": ["api", "external-apis", "{{external_api_id}}"]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Delete External API",
-          "request": {
-            "method": "DELETE",
-            "header": [],
-            "url": {
-              "raw": "{{base_url}}/api/external-apis/{{external_api_id}}",
-              "host": ["{{base_url}}"],
-              "path": ["api", "external-apis", "{{external_api_id}}"]
-            }
-          },
-          "response": []
-        }
-      ]
-    },
-    {
-      "name": "🚀 Proxy APIs (Menggunakan API Key)",
-      "item": [
-        {
-          "name": "Get Todo by ID",
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "X-API-Key",
-                "value": "{{api_key}}"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/api/proxy/jsonplaceholder/todos/1",
-              "host": ["{{base_url}}"],
-              "path": ["api", "proxy", "jsonplaceholder", "todos", "1"]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Get All Todos",
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "X-API-Key",
-                "value": "{{api_key}}"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/api/proxy/jsonplaceholder/todos?_limit=10&_start=0",
-              "host": ["{{base_url}}"],
-              "path": ["api", "proxy", "jsonplaceholder", "todos"],
-              "query": [
-                {
-                  "key": "_limit",
-                  "value": "10"
-                },
-                {
-                  "key": "_start",
-                  "value": "0"
-                }
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Get Post by ID",
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "X-API-Key",
-                "value": "{{api_key}}"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/api/proxy/jsonplaceholder/posts/1",
-              "host": ["{{base_url}}"],
-              "path": ["api", "proxy", "jsonplaceholder", "posts", "1"]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Get All Posts",
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "X-API-Key",
-                "value": "{{api_key}}"
-              }
-            ],
-            "url": {
-              "raw": "{{base_url}}/api/proxy/jsonplaceholder/posts?_limit=5",
-              "host": ["{{base_url}}"],
-              "path": ["api", "proxy", "jsonplaceholder", "posts"],
-              "query": [
-                {
-                  "key": "_limit",
-                  "value": "5"
-                }
-              ]
-            }
-          },
-          "response": []
-        }
-      ]
-    },
-    {
-      "name": "👥 Users Management",
-      "item": [
-        {
-          "name": "Get All Users",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{base_url}}/api/users",
-              "host": ["{{base_url}}"],
-              "path": ["api", "users"]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Create User",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"name\": \"John Doe\",\n  \"email\": \"john@example.com\",\n  \"password\": \"password123\",\n  \"roleId\": \"1\"\n}"
-            },
-            "url": {
-              "raw": "{{base_url}}/api/users",
-              "host": ["{{base_url}}"],
-              "path": ["api", "users"]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Get User by ID",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{base_url}}/api/users/{{user_id}}",
-              "host": ["{{base_url}}"],
-              "path": ["api", "users", "{{user_id}}"]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Update User",
-          "request": {
-            "method": "PUT",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"name\": \"Updated Name\",\n  \"email\": \"updated@example.com\",\n  \"roleId\": \"2\"\n}"
-            },
-            "url": {
-              "raw": "{{base_url}}/api/users/{{user_id}}",
-              "host": ["{{base_url}}"],
-              "path": ["api", "users", "{{user_id}}"]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Delete User",
-          "request": {
-            "method": "DELETE",
-            "header": [],
-            "url": {
-              "raw": "{{base_url}}/api/users/{{user_id}}",
-              "host": ["{{base_url}}"],
-              "path": ["api", "users", "{{user_id}}"]
-            }
-          },
-          "response": []
-        }
-      ]
-    },
-    {
-      "name": "📊 Dashboard",
-      "item": [
-        {
-          "name": "Get Dashboard Stats",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{base_url}}/api/dashboard/stats",
-              "host": ["{{base_url}}"],
-              "path": ["api", "dashboard", "stats"]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Get Recent Activity",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{base_url}}/api/dashboard/activity",
-              "host": ["{{base_url}}"],
-              "path": ["api", "dashboard", "activity"]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Get API Usage Chart",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{base_url}}/api/dashboard/usage-chart?period=7d",
-              "host": ["{{base_url}}"],
-              "path": ["api", "dashboard", "usage-chart"],
-              "query": [
-                {
-                  "key": "period",
-                  "value": "7d"
-                }
-              ]
-            }
-          },
-          "response": []
-        }
-      ]
-    },
-    {
-      "name": "📝 Audit Logs",
-      "item": [
-        {
-          "name": "Get All Audit Logs",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{base_url}}/api/audit?page=1&limit=20",
-              "host": ["{{base_url}}"],
-              "path": ["api", "audit"],
-              "query": [
-                {
-                  "key": "page",
-                  "value": "1"
-                },
-                {
-                  "key": "limit",
-                  "value": "20"
-                }
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Get Audit Log by ID",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{base_url}}/api/audit/{{audit_id}}",
-              "host": ["{{base_url}}"],
-              "path": ["api", "audit", "{{audit_id}}"]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Search Audit Logs",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{base_url}}/api/audit/search?q=login&startDate=2024-01-01&endDate=2024-12-31",
-              "host": ["{{base_url}}"],
-              "path": ["api", "audit", "search"],
-              "query": [
-                {
-                  "key": "q",
-                  "value": "login"
-                },
-                {
-                  "key": "startDate",
-                  "value": "2024-01-01"
-                },
-                {
-                  "key": "endDate",
-                  "value": "2024-12-31"
-                }
-              ]
-            }
-          },
-          "response": []
-        }
-      ]
-    },
-    {
-      "name": "⚙️ System Settings",
-      "item": [
-        {
-          "name": "Get System Settings",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{base_url}}/api/system/settings",
-              "host": ["{{base_url}}"],
-              "path": ["api", "system", "settings"]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Update System Settings",
-          "request": {
-            "method": "PUT",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"maintenanceMode\": false,\n  \"rateLimit\": 1000,\n  \"sessionTimeout\": 3600\n}"
-            },
-            "url": {
-              "raw": "{{base_url}}/api/system/settings",
-              "host": ["{{base_url}}"],
-              "path": ["api", "system", "settings"]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Get System Health",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{base_url}}/api/system/health",
-              "host": ["{{base_url}}"],
-              "path": ["api", "system", "health"]
-            }
-          },
-          "response": []
-        }
-      ]
-    }
-  ]
+	"info": {
+		"_postman_id": "api-manager-collection",
+		"name": "API Manager Collection",
+		"description": "Complete Postman collection for API Manager with External APIs, API Providers, and Dynamic Query endpoints",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "🔐 Authentication",
+			"item": [
+				{
+					"name": "Login",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"admin@apimanager.com\",\n  \"password\": \"admin123\"\n}"
+						},
+						"url": {
+							"raw": "{{BASE_URL}}/api/auth/login",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"login"
+							]
+						}
+					},
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    const response = pm.response.json();",
+									"    pm.environment.set('JWT_TOKEN', response.token);",
+									"    console.log('JWT Token saved:', response.token);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					]
+				},
+				{
+					"name": "Create API Key",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{JWT_TOKEN}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Test API Key\",\n  \"description\": \"API Key for testing\",\n  \"permissions\": [\"read\", \"write\"]\n}"
+						},
+						"url": {
+							"raw": "{{BASE_URL}}/api/apikeys",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"api",
+								"apikeys"
+							]
+						}
+					},
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    const response = pm.response.json();",
+									"    pm.environment.set('API_KEY', response.data.key);",
+									"    console.log('API Key saved:', response.data.key);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "🔗 External APIs",
+			"item": [
+				{
+					"name": "Get All External APIs",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{JWT_TOKEN}}"
+							}
+						],
+						"url": {
+							"raw": "{{BASE_URL}}/api/external-apis",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"api",
+								"external-apis"
+							]
+						}
+					}
+				},
+				{
+					"name": "Test External API",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{JWT_TOKEN}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"params\": {\n    \"id\": \"1\"\n  },\n  \"body\": {}\n}"
+						},
+						"url": {
+							"raw": "{{BASE_URL}}/api/external-apis/{{EXTERNAL_API_ID}}/test",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"api",
+								"external-apis",
+								"{{EXTERNAL_API_ID}}",
+								"test"
+							]
+						}
+					}
+				},
+				{
+					"name": "Execute External API (GET)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-API-Key",
+								"value": "{{API_KEY}}"
+							}
+						],
+						"url": {
+							"raw": "{{BASE_URL}}/api/proxy/dynamic/{{EXTERNAL_API_ID}}?id=1",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"api",
+								"proxy",
+								"dynamic",
+								"{{EXTERNAL_API_ID}}"
+							],
+							"query": [
+								{
+									"key": "id",
+									"value": "1"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Execute External API (POST)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-API-Key",
+								"value": "{{API_KEY}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"title\": \"New Post via External API\",\n  \"body\": \"This is the content of my new post\",\n  \"userId\": 1\n}"
+						},
+						"url": {
+							"raw": "{{BASE_URL}}/api/proxy/dynamic/{{EXTERNAL_API_ID}}",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"api",
+								"proxy",
+								"dynamic",
+								"{{EXTERNAL_API_ID}}"
+							]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "🚀 API Providers",
+			"item": [
+				{
+					"name": "Get All API Providers",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{JWT_TOKEN}}"
+							}
+						],
+						"url": {
+							"raw": "{{BASE_URL}}/api/api-providers",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"api",
+								"api-providers"
+							]
+						}
+					}
+				},
+				{
+					"name": "Get Todo by ID (JSONPlaceholder)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-API-Key",
+								"value": "{{API_KEY}}"
+							}
+						],
+						"url": {
+							"raw": "{{BASE_URL}}/api/proxy/provider/{{PROVIDER_ID}}/todos/1",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"api",
+								"proxy",
+								"provider",
+								"{{PROVIDER_ID}}",
+								"todos",
+								"1"
+							]
+						}
+					}
+				},
+				{
+					"name": "Get All Todos (JSONPlaceholder)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-API-Key",
+								"value": "{{API_KEY}}"
+							}
+						],
+						"url": {
+							"raw": "{{BASE_URL}}/api/proxy/provider/{{PROVIDER_ID}}/todos?_limit=5",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"api",
+								"proxy",
+								"provider",
+								"{{PROVIDER_ID}}",
+								"todos"
+							],
+							"query": [
+								{
+									"key": "_limit",
+									"value": "5"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Get Post by ID (JSONPlaceholder)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-API-Key",
+								"value": "{{API_KEY}}"
+							}
+						],
+						"url": {
+							"raw": "{{BASE_URL}}/api/proxy/provider/{{PROVIDER_ID}}/posts/1",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"api",
+								"proxy",
+								"provider",
+								"{{PROVIDER_ID}}",
+								"posts",
+								"1"
+							]
+						}
+					}
+				},
+				{
+					"name": "Create Post (JSONPlaceholder)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-API-Key",
+								"value": "{{API_KEY}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"title\": \"My New Post via API Provider\",\n  \"body\": \"This is the content of my new post using API Provider system\",\n  \"userId\": 1\n}"
+						},
+						"url": {
+							"raw": "{{BASE_URL}}/api/proxy/provider/{{PROVIDER_ID}}/posts",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"api",
+								"proxy",
+								"provider",
+								"{{PROVIDER_ID}}",
+								"posts"
+							]
+						}
+					}
+				},
+				{
+					"name": "Update Post (JSONPlaceholder)",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "X-API-Key",
+								"value": "{{API_KEY}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"id\": 1,\n  \"title\": \"Updated Post Title via API Provider\",\n  \"body\": \"Updated post content using API Provider system\",\n  \"userId\": 1\n}"
+						},
+						"url": {
+							"raw": "{{BASE_URL}}/api/proxy/provider/{{PROVIDER_ID}}/posts/1",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"api",
+								"proxy",
+								"provider",
+								"{{PROVIDER_ID}}",
+								"posts",
+								"1"
+							]
+						}
+					}
+				},
+				{
+					"name": "Delete Post (JSONPlaceholder)",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "X-API-Key",
+								"value": "{{API_KEY}}"
+							}
+						],
+						"url": {
+							"raw": "{{BASE_URL}}/api/proxy/provider/{{PROVIDER_ID}}/posts/1",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"api",
+								"proxy",
+								"provider",
+								"{{PROVIDER_ID}}",
+								"posts",
+								"1"
+							]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "🗄️ Dynamic Query",
+			"item": [
+				{
+					"name": "Get All Dynamic Queries",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{JWT_TOKEN}}"
+							}
+						],
+						"url": {
+							"raw": "{{BASE_URL}}/api/dynamic-queries",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"api",
+								"dynamic-queries"
+							]
+						}
+					}
+				},
+				{
+					"name": "Test Dynamic Query",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{JWT_TOKEN}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{}"
+						},
+						"url": {
+							"raw": "{{BASE_URL}}/api/dynamic-queries/{{QUERY_ID}}/test",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"api",
+								"dynamic-queries",
+								"{{QUERY_ID}}",
+								"test"
+							]
+						}
+					}
+				},
+				{
+					"name": "Execute Dynamic Query (JWT)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{JWT_TOKEN}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"params\": [\"param1\", \"param2\"]\n}"
+						},
+						"url": {
+							"raw": "{{BASE_URL}}/api/dynamic-queries/{{QUERY_ID}}/execute",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"api",
+								"dynamic-queries",
+								"{{QUERY_ID}}",
+								"execute"
+							]
+						}
+					}
+				},
+				{
+					"name": "Execute Dynamic Query (API Key)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-API-Key",
+								"value": "{{API_KEY}}"
+							}
+						],
+						"url": {
+							"raw": "{{BASE_URL}}/api/proxy/{{QUERY_NAME}}/1",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"api",
+								"proxy",
+								"{{QUERY_NAME}}",
+								"1"
+							]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "📋 Examples",
+			"item": [
+				{
+					"name": "JSONPlaceholder Examples",
+					"item": [
+						{
+							"name": "Get Todo by ID",
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "X-API-Key",
+										"value": "ak_11345096dd45f7e65238caa4059ca3d38fe924c33c705b21161db2d548ca416c"
+									}
+								],
+								"url": {
+									"raw": "{{BASE_URL}}/api/proxy/jsonplaceholder/todos/1",
+									"host": [
+										"{{BASE_URL}}"
+									],
+									"path": [
+										"api",
+										"proxy",
+										"jsonplaceholder",
+										"todos",
+										"1"
+									]
+								}
+							}
+						},
+						{
+							"name": "Get Post by ID",
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "X-API-Key",
+										"value": "ak_11345096dd45f7e65238caa4059ca3d38fe924c33c705b21161db2d548ca416c"
+									}
+								],
+								"url": {
+									"raw": "{{BASE_URL}}/api/proxy/jsonplaceholder/posts/1",
+									"host": [
+										"{{BASE_URL}}"
+									],
+									"path": [
+										"api",
+										"proxy",
+										"jsonplaceholder",
+										"posts",
+										"1"
+									]
+								}
+							}
+						},
+						{
+							"name": "Get All Todos",
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "X-API-Key",
+										"value": "ak_11345096dd45f7e65238caa4059ca3d38fe924c33c705b21161db2d548ca416c"
+									}
+								],
+								"url": {
+									"raw": "{{BASE_URL}}/api/proxy/jsonplaceholder/todos",
+									"host": [
+										"{{BASE_URL}}"
+									],
+									"path": [
+										"api",
+										"proxy",
+										"jsonplaceholder",
+										"todos"
+									]
+								}
+							}
+						},
+						{
+							"name": "Get All Posts",
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "X-API-Key",
+										"value": "ak_11345096dd45f7e65238caa4059ca3d38fe924c33c705b21161db2d548ca416c"
+									}
+								],
+								"url": {
+									"raw": "{{BASE_URL}}/api/proxy/jsonplaceholder/posts",
+									"host": [
+										"{{BASE_URL}}"
+									],
+									"path": [
+										"api",
+										"proxy",
+										"jsonplaceholder",
+										"posts"
+									]
+								}
+							}
+						}
+					]
+				}
+			]
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					"// Auto login if JWT token is missing or expired",
+					"if (!pm.environment.get('JWT_TOKEN')) {",
+					"    console.log('JWT Token not found, attempting auto login...');",
+					"    ",
+					"    pm.sendRequest({",
+					"        url: pm.environment.get('BASE_URL') + '/api/auth/login',",
+					"        method: 'POST',",
+					"        header: {",
+					"            'Content-Type': 'application/json'",
+					"        },",
+					"        body: {",
+					"            mode: 'raw',",
+					"            raw: JSON.stringify({",
+					"                email: 'admin@apimanager.com',",
+					"                password: 'admin123'",
+					"            })",
+					"        }",
+					"    }, function (err, response) {",
+					"        if (response.code === 200) {",
+					"            const data = response.json();",
+					"            pm.environment.set('JWT_TOKEN', data.token);",
+					"            console.log('Auto login successful, JWT token saved');",
+					"        }",
+					"    });",
+					"}"
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "BASE_URL",
+			"value": "http://localhost:8000",
+			"type": "string"
+		},
+		{
+			"key": "JWT_TOKEN",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "API_KEY",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "EXTERNAL_API_ID",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "PROVIDER_ID",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "QUERY_ID",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "QUERY_NAME",
+			"value": "",
+			"type": "string"
+		}
+	]
 } 
