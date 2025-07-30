@@ -422,6 +422,9 @@ export default function ExternalAPIs() {
                       <div className="text-sm text-gray-500 dark:text-gray-400">
                         {api.description}
                       </div>
+                      <div className="text-xs text-gray-400 dark:text-gray-500 font-mono">
+                          ID: {api.id}
+                        </div>
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
