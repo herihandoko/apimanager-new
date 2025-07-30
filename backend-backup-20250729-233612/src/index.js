@@ -101,16 +101,14 @@ app.use(helmet());
 app.use(compression());
 app.use(morgan('combined'));
 // Parse CORS origins
-const corsOrigins = process.env.CORS_ORIGIN 
-  ? process.env.CORS_ORIGIN.split(',').map(origin => origin.trim())
-  : ['http://localhost:3000', 'http://localhost:3001'];
-
-app.use(cors({
-  origin: "https://apimanager.bantenprov.go.id",
-  credentials: true,
-  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"]
-}));
+// const corsOrigins = process.env.CORS_ORIGIN 
+//   ? process.env.CORS_ORIGIN.split(',').map(origin => origin.trim())
+//   : ['http://localhost:3000', 'http://localhost:3001'];
+// 
+// app.use(cors({
+//   origin: corsOrigins,
+//   credentials: true,
+// }));
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 

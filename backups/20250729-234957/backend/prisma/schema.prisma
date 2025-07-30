@@ -1,0 +1,289 @@
+generator client {
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "linux-musl-arm64-openssl-3.0.x"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id         String     @id @default(cuid())
+  email      String     @unique
+  username   String     @unique
+  password   String
+  firstName  String?
+  lastName   String?
+  avatar     String?
+  isActive   Boolean    @default(true)
+  isVerified Boolean    @default(false)
+  lastLogin  DateTime?
+  createdAt  DateTime   @default(now())
+  updatedAt  DateTime   @updatedAt
+  roleId     String?
+  apiKeys    ApiKey[]
+  auditLogs  AuditLog[]
+  sessions   Session[]
+  role       Role?      @relation(fields: [roleId], references: [id])
+
+  @@map("users")
+}
+
+model Role {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  description String?
+  permissions Json
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  users       User[]
+
+  @@map("roles")
+}
+
+model ApiKey {
+  id          String    @id @default(cuid())
+  name        String
+  key         String    @unique
+  keyHash     String    @unique
+  description String?
+  permissions Json
+  rateLimit   Int       @default(1000)
+  ipWhitelist String[]  @default([])
+  isActive    Boolean   @default(true)
+  expiresAt   DateTime?
+  lastUsedAt  DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  userId      String
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  apiLogs     ApiLog[]
+
+  @@map("api_keys")
+}
+
+model Session {
+  id        String   @id @default(cuid())
+  token     String   @unique
+  userId    String
+  ipAddress String?
+  userAgent String?
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("sessions")
+}
+
+model ApiLog {
+  id           String   @id @default(cuid())
+  apiKeyId     String?
+  endpoint     String
+  method       String
+  statusCode   Int
+  responseTime Int
+  ipAddress    String
+  userAgent    String?
+  requestBody  Json?
+  responseBody Json?
+  error        String?
+  createdAt    DateTime @default(now())
+  apiKey       ApiKey?  @relation(fields: [apiKeyId], references: [id])
+
+  @@map("api_logs")
+}
+
+model AuditLog {
+  id         String   @id @default(cuid())
+  userId     String
+  action     String
+  resource   String
+  resourceId String?
+  details    Json?
+  ipAddress  String?
+  userAgent  String?
+  createdAt  DateTime @default(now())
+  severity   String   @default("low")
+  status     String   @default("success")
+  user       User     @relation(fields: [userId], references: [id])
+
+  @@map("audit_logs")
+}
+
+model SystemConfig {
+  id        String   @id @default(cuid())
+  key       String   @unique
+  value     Json
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("system_configs")
+}
+
+model APIProvider {
+  id            String           @id @default(cuid())
+  name          String           @unique
+  description   String
+  baseUrl       String
+  documentation String?
+  requiresAuth  Boolean          @default(false)
+  authType      String           @default("none")
+  authConfig    Json?
+  rateLimit     Int              @default(1000)
+  timeout       Int              @default(10000)
+  isActive      Boolean          @default(true)
+  lastTested    DateTime?
+  testStatus    String?
+  createdAt     DateTime         @default(now())
+  updatedAt     DateTime         @updatedAt
+  endpoints     APIEndpoint[]
+  logs          APIProviderLog[]
+
+  @@map("api_providers")
+}
+
+model APIEndpoint {
+  id          String      @id @default(cuid())
+  providerId  String
+  path        String
+  method      String
+  description String?
+  parameters  Json?
+  isActive    Boolean     @default(true)
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  provider    APIProvider @relation(fields: [providerId], references: [id], onDelete: Cascade)
+
+  @@unique([providerId, path, method])
+  @@map("api_endpoints")
+}
+
+model APIProviderLog {
+  id           String      @id @default(cuid())
+  providerId   String
+  endpoint     String
+  method       String
+  url          String
+  status       Int
+  duration     Int
+  responseSize Int         @default(0)
+  success      Boolean     @default(true)
+  error        String?
+  createdAt    DateTime    @default(now())
+  provider     APIProvider @relation(fields: [providerId], references: [id], onDelete: Cascade)
+
+  @@map("api_provider_logs")
+}
+
+model ExternalAPI {
+  id           String           @id @default(cuid())
+  name         String
+  description  String
+  baseUrl      String
+  endpoint     String
+  method       String
+  requiresAuth Boolean          @default(false)
+  authType     String           @default("none")
+  authConfig   Json?
+  rateLimit    Int              @default(1000)
+  timeout      Int              @default(10000)
+  isActive     Boolean          @default(true)
+  lastTested   DateTime?
+  testStatus   String?
+  createdAt    DateTime         @default(now())
+  updatedAt    DateTime         @updatedAt
+  logs         ExternalAPILog[]
+
+  @@map("external_apis")
+}
+
+model ExternalAPILog {
+  id            String      @id @default(cuid())
+  externalAPIId String
+  method        String
+  url           String
+  status        Int
+  duration      Int
+  responseSize  Int         @default(0)
+  success       Boolean     @default(true)
+  error         String?
+  createdAt     DateTime    @default(now())
+  externalAPI   ExternalAPI @relation(fields: [externalAPIId], references: [id], onDelete: Cascade)
+
+  @@map("external_api_logs")
+}
+
+model DatabaseConnection {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  description String?
+  host        String
+  port        Int      @default(3306)
+  database    String
+  username    String
+  password    String
+  useSSL      Boolean  @default(false)
+  useTunnel   Boolean  @default(false)
+  tunnelConfig Json?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  queries     DynamicQuery[]
+  logs        DatabaseConnectionLog[]
+
+  @@map("database_connections")
+}
+
+model DynamicQuery {
+  id                String             @id @default(cuid())
+  connectionId      String
+  name              String
+  description       String?
+  query             String
+  method            String             @default("GET")
+  path              String
+  parameters        Json?
+  responseFormat    String             @default("json")
+  cacheEnabled      Boolean            @default(false)
+  cacheDuration     Int                @default(300)
+  rateLimit         Int                @default(1000)
+  isActive          Boolean            @default(true)
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+  connection        DatabaseConnection @relation(fields: [connectionId], references: [id], onDelete: Cascade)
+  logs              DynamicQueryLog[]
+
+  @@unique([connectionId, path, method])
+  @@map("dynamic_queries")
+}
+
+model DatabaseConnectionLog {
+  id           String             @id @default(cuid())
+  connectionId String
+  action       String
+  status       String
+  duration     Int?
+  error        String?
+  createdAt    DateTime           @default(now())
+  connection   DatabaseConnection @relation(fields: [connectionId], references: [id], onDelete: Cascade)
+
+  @@map("database_connection_logs")
+}
+
+model DynamicQueryLog {
+  id           String        @id @default(cuid())
+  queryId      String
+  method       String
+  path         String
+  status       Int
+  duration     Int
+  responseSize Int           @default(0)
+  success      Boolean       @default(true)
+  error        String?
+  createdAt    DateTime      @default(now())
+  query        DynamicQuery  @relation(fields: [queryId], references: [id], onDelete: Cascade)
+
+  @@map("dynamic_query_logs")
+}
