@@ -216,6 +216,24 @@ export default function APIProviders() {
     }
   };
 
+  const handleDeleteProvider = async (providerId: string) => {
+    const provider = apiProviders.find(p => p.id === providerId);
+    if (!provider) return;
+
+    // Show confirmation dialog
+    if (!confirm(`Are you sure you want to delete "${provider.name}"? This action cannot be undone.`)) {
+      return;
+    }
+
+    try {
+      await apiProviderService.deleteAPIProvider(providerId);
+      setApiProviders(prev => prev.filter(provider => provider.id !== providerId));
+      toast.success('API provider deleted successfully');
+    } catch (error: any) {
+      toast.error(error.message || 'Failed to delete API provider');
+    }
+  };
+
   const handleViewEndpoints = (provider: any) => {
     setSelectedProvider(provider);
     setShowEndpointsModal(true);
@@ -525,6 +543,7 @@ export default function APIProviders() {
                         variant="outline"
                         size="sm"
                         onClick={() => handleViewEndpoints(provider)}
+                        title="View Endpoints"
                       >
                         <Database className="w-4 h-4" />
                       </Button>
@@ -532,6 +551,7 @@ export default function APIProviders() {
                         variant="outline"
                         size="sm"
                         onClick={() => handleEditProvider(provider)}
+                        title="Edit Provider"
                       >
                         <Edit className="w-4 h-4" />
                       </Button>
@@ -539,6 +559,7 @@ export default function APIProviders() {
                         variant="outline"
                         size="sm"
                         onClick={() => copyToClipboard(`curl -X GET "http://localhost:8000/api/proxy/provider/${provider.id}/endpoint" -H "X-API-Key: YOUR_API_KEY"`)}
+                        title="Copy API Call"
                       >
                         <Copy className="w-4 h-4" />
                       </Button>
@@ -546,8 +567,18 @@ export default function APIProviders() {
                         variant="outline"
                         size="sm"
                         onClick={() => handleToggleStatus(provider.id!)}
+                        title={provider.isActive ? "Deactivate Provider" : "Activate Provider"}
                       >
                         {provider.isActive ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleDeleteProvider(provider.id!)}
+                        className="text-red-600 hover:text-red-700 hover:bg-red-50 border-red-200 hover:border-red-300 dark:text-red-400 dark:hover:text-red-300 dark:hover:bg-red-900/20 dark:border-red-700 dark:hover:border-red-600"
+                        title="Delete API Provider"
+                      >
+                        <Trash2 className="w-4 h-4" />
                       </Button>
                     </div>
                   </td>
