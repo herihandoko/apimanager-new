@@ -125,6 +125,7 @@ router.post('/', authenticateToken, asyncHandler(async (req, res) => {
     requiresAuth,
     authType,
     authConfig,
+    authConfigs,
     rateLimit,
     timeout,
     isActive,
@@ -161,6 +162,7 @@ router.post('/', authenticateToken, asyncHandler(async (req, res) => {
       requiresAuth: requiresAuth || false,
       authType: authType || 'none',
       authConfig: authConfig || null,
+      authConfigs: authConfigs || [],
       rateLimit: rateLimit || 1000,
       timeout: timeout || 10000,
       isActive: isActive !== undefined ? isActive : true,
@@ -209,6 +211,14 @@ router.put('/:id', authenticateToken, asyncHandler(async (req, res) => {
 
   // Remove endpoints from update data as they need special handling
   const { endpoints, ...providerData } = updateData;
+
+  // Ensure authConfigs is properly formatted as JSON array
+  if (providerData.authConfigs && Array.isArray(providerData.authConfigs)) {
+    providerData.authConfigs = providerData.authConfigs;
+  } else if (providerData.authConfigs) {
+    // If it's not an array, convert it to array
+    providerData.authConfigs = [providerData.authConfigs];
+  }
 
   const provider = await prisma.aPIProvider.update({
     where: { id },

@@ -151,6 +151,9 @@ export default function APIProviders() {
   const [showEditModal, setShowEditModal] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isLoadingData, setIsLoadingData] = useState(true);
+  const [openDropdown, setOpenDropdown] = useState<string | null>(null);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [providerToDelete, setProviderToDelete] = useState<APIProvider | null>(null);
 
   // Load API providers from backend
   useEffect(() => {
@@ -169,6 +172,20 @@ export default function APIProviders() {
 
     loadAPIProviders();
   }, []);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (openDropdown && !(event.target as Element).closest('.dropdown-container')) {
+        setOpenDropdown(null);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [openDropdown]);
 
   const handleCreateProvider = () => {
     setSelectedProvider(null);
@@ -216,22 +233,31 @@ export default function APIProviders() {
     }
   };
 
-  const handleDeleteProvider = async (providerId: string) => {
+  const handleDeleteProvider = (providerId: string) => {
     const provider = apiProviders.find(p => p.id === providerId);
     if (!provider) return;
 
-    // Show confirmation dialog
-    if (!confirm(`Are you sure you want to delete "${provider.name}"? This action cannot be undone.`)) {
-      return;
-    }
+    setProviderToDelete(provider);
+    setShowDeleteModal(true);
+  };
+
+  const confirmDelete = async () => {
+    if (!providerToDelete) return;
 
     try {
-      await apiProviderService.deleteAPIProvider(providerId);
-      setApiProviders(prev => prev.filter(provider => provider.id !== providerId));
+      await apiProviderService.deleteAPIProvider(providerToDelete.id!);
+      setApiProviders(prev => prev.filter(provider => provider.id !== providerToDelete.id));
       toast.success('API provider deleted successfully');
+      setShowDeleteModal(false);
+      setProviderToDelete(null);
     } catch (error: any) {
       toast.error(error.message || 'Failed to delete API provider');
     }
+  };
+
+  const cancelDelete = () => {
+    setShowDeleteModal(false);
+    setProviderToDelete(null);
   };
 
   const handleViewEndpoints = (provider: any) => {
@@ -538,12 +564,14 @@ export default function APIProviders() {
                     {provider.updatedAt ? formatDate(provider.updatedAt) : 'N/A'}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                    <div className="flex items-center justify-end space-x-2">
+                    <div className="flex items-center justify-end space-x-1">
+                      {/* Primary Actions - Always Visible */}
                       <Button
                         variant="outline"
                         size="sm"
                         onClick={() => handleViewEndpoints(provider)}
                         title="View Endpoints"
+                        className="hidden sm:inline-flex"
                       >
                         <Database className="w-4 h-4" />
                       </Button>
@@ -552,30 +580,66 @@ export default function APIProviders() {
                         size="sm"
                         onClick={() => handleEditProvider(provider)}
                         title="Edit Provider"
+                        className="hidden sm:inline-flex"
                       >
                         <Edit className="w-4 h-4" />
                       </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => copyToClipboard(`curl -X GET "http://localhost:8000/api/proxy/provider/${provider.id}/endpoint" -H "X-API-Key: YOUR_API_KEY"`)}
-                        title="Copy API Call"
-                      >
-                        <Copy className="w-4 h-4" />
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleToggleStatus(provider.id!)}
-                        title={provider.isActive ? "Deactivate Provider" : "Activate Provider"}
-                      >
-                        {provider.isActive ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                      </Button>
+                      
+                      {/* Dropdown Menu for Secondary Actions */}
+                      <div className="relative dropdown-container">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setOpenDropdown(openDropdown === provider.id ? null : (provider.id || null))}
+                          title="More Actions"
+                        >
+                          <MoreVertical className="w-4 h-4" />
+                        </Button>
+                        
+                        {openDropdown === provider.id && (
+                          <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-md shadow-lg z-10 border border-gray-200 dark:border-gray-700">
+                            <div className="py-1">
+                              <button
+                                onClick={() => {
+                                  copyToClipboard(`curl -X GET "http://localhost:8000/api/proxy/provider/${provider.id}/endpoint" -H "X-API-Key: YOUR_API_KEY"`);
+                                  setOpenDropdown(null);
+                                }}
+                                className="flex items-center w-full px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+                              >
+                                <Copy className="w-4 h-4 mr-3" />
+                                Copy API Call
+                              </button>
+                              <button
+                                onClick={() => {
+                                  handleToggleStatus(provider.id!);
+                                  setOpenDropdown(null);
+                                }}
+                                className="flex items-center w-full px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+                              >
+                                {provider.isActive ? <EyeOff className="w-4 h-4 mr-3" /> : <Eye className="w-4 h-4 mr-3" />}
+                                {provider.isActive ? "Deactivate" : "Activate"}
+                              </button>
+                              <button
+                                onClick={() => {
+                                  handleDeleteProvider(provider.id!);
+                                  setOpenDropdown(null);
+                                }}
+                                className="flex items-center w-full px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20"
+                              >
+                                <Trash2 className="w-4 h-4 mr-3" />
+                                Delete Provider
+                              </button>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                      
+                      {/* Mobile: Show Delete Button Always */}
                       <Button
                         variant="outline"
                         size="sm"
                         onClick={() => handleDeleteProvider(provider.id!)}
-                        className="text-red-600 hover:text-red-700 hover:bg-red-50 border-red-200 hover:border-red-300 dark:text-red-400 dark:hover:text-red-300 dark:hover:bg-red-900/20 dark:border-red-700 dark:hover:border-red-600"
+                        className="sm:hidden text-red-600 hover:text-red-700 hover:bg-red-50 border-red-200 hover:border-red-300 dark:text-red-400 dark:hover:text-red-300 dark:hover:bg-red-900/20 dark:border-red-700 dark:hover:border-red-600"
                         title="Delete API Provider"
                       >
                         <Trash2 className="w-4 h-4" />
@@ -693,6 +757,81 @@ export default function APIProviders() {
                     ))}
                   </div>
                 </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {showDeleteModal && providerToDelete && (
+        <div className="fixed inset-0 z-50 overflow-y-auto">
+          <div className="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
+            {/* Backdrop */}
+            <div className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" onClick={cancelDelete} />
+            
+            {/* Modal */}
+            <div className="relative inline-block w-full max-w-md p-6 my-8 overflow-hidden text-left align-middle transition-all transform bg-white dark:bg-gray-800 shadow-xl rounded-2xl">
+              {/* Icon */}
+              <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100 dark:bg-red-900/20 mb-4">
+                <Trash2 className="h-6 w-6 text-red-600 dark:text-red-400" />
+              </div>
+              
+              {/* Title */}
+              <div className="text-center mb-4">
+                <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
+                  Delete API Provider
+                </h3>
+                <p className="text-sm text-gray-500 dark:text-gray-400">
+                  Are you sure you want to delete this API provider? This action cannot be undone.
+                </p>
+              </div>
+
+              {/* Provider Info */}
+              <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4 mb-6">
+                <div className="flex items-center space-x-3">
+                  {getProviderIcon(providerToDelete.name)}
+                  <div>
+                    <div className="font-medium text-gray-900 dark:text-white">
+                      {providerToDelete.name}
+                    </div>
+                    <div className="text-sm text-gray-500 dark:text-gray-400">
+                      {providerToDelete.description}
+                    </div>
+                    <div className="text-xs text-gray-400 dark:text-gray-500 font-mono mt-1">
+                      {providerToDelete.baseUrl}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Warning */}
+              <div className="bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-800 rounded-lg p-3 mb-6">
+                <div className="flex items-start">
+                  <AlertTriangle className="h-5 w-5 text-red-600 dark:text-red-400 mt-0.5 mr-2 flex-shrink-0" />
+                  <div className="text-sm text-red-700 dark:text-red-300">
+                    <strong>Warning:</strong> This will permanently delete the API provider and all associated data. 
+                    Any active integrations using this provider will stop working.
+                  </div>
+                </div>
+              </div>
+
+              {/* Actions */}
+              <div className="flex items-center justify-end space-x-3">
+                <Button
+                  variant="outline"
+                  onClick={cancelDelete}
+                  className="px-4 py-2"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  onClick={confirmDelete}
+                  className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white border-red-600 hover:border-red-700"
+                >
+                  <Trash2 className="w-4 h-4 mr-2" />
+                  Delete Provider
+                </Button>
               </div>
             </div>
           </div>

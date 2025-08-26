@@ -1,5 +1,20 @@
 import api from './api';
 
+interface AuthConfig {
+  type: 'api_key' | 'bearer' | 'basic' | 'oauth2' | 'custom';
+  headerName?: string;
+  headerValue?: string;
+  username?: string;
+  password?: string;
+  clientId?: string;
+  clientSecret?: string;
+  tokenUrl?: string;
+  customHeaders?: Array<{
+    name: string;
+    value: string;
+  }>;
+}
+
 export interface APIProvider {
   id?: string;
   name: string;
@@ -7,11 +22,7 @@ export interface APIProvider {
   baseUrl: string;
   documentation?: string;
   requiresAuth: boolean;
-  authType: 'none' | 'api_key' | 'bearer' | 'basic';
-  authConfig?: {
-    headerName?: string;
-    headerValue?: string;
-  };
+  authConfigs: AuthConfig[];
   rateLimit: number;
   timeout: number;
   isActive: boolean;

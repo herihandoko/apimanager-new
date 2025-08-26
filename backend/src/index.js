@@ -106,7 +106,7 @@ const corsOrigins = process.env.CORS_ORIGIN
   : ['http://localhost:3000', 'http://localhost:3001'];
 
 app.use(cors({
-  origin: "https://apimanager.bantenprov.go.id",
+  origin: process.env.NODE_ENV === 'development' ? corsOrigins : "https://apimanager.bantenprov.go.id",
   credentials: true,
   methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"]

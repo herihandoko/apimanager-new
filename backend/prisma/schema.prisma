@@ -131,6 +131,7 @@ model APIProvider {
   requiresAuth  Boolean          @default(false)
   authType      String           @default("none")
   authConfig    Json?
+  authConfigs   Json[]           @default([])
   rateLimit     Int              @default(1000)
   timeout       Int              @default(10000)
   isActive      Boolean          @default(true)
