@@ -601,7 +601,10 @@ export default function APIProviders() {
                             <div className="py-1">
                               <button
                                 onClick={() => {
-                                  copyToClipboard(`curl -X GET "http://localhost:8000/api/proxy/provider/${provider.id}/endpoint" -H "X-API-Key: YOUR_API_KEY"`);
+                                  const baseUrl = window.location.hostname === 'localhost' 
+                                    ? 'http://localhost:8000' 
+                                    : 'https://api.bantenprov.go.id';
+                                  copyToClipboard(`curl -X GET "${baseUrl}/api/proxy/provider/${provider.id}/endpoint" -H "X-API-Key: YOUR_API_KEY"`);
                                   setOpenDropdown(null);
                                 }}
                                 className="flex items-center w-full px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
