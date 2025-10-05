@@ -129,6 +129,275 @@ app.use((req, res, next) => {
   return speedLimiter(req, res, next);
 });
 
+// Static files serving
+app.use('/static', express.static('uploads'));
+
+// Landing page
+app.get('/', (req, res) => {
+  res.send(`
+    <!DOCTYPE html>
+    <html lang="id">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>API Manager - Pemerintah Provinsi Banten</title>
+        <style>
+            * {
+                margin: 0;
+                padding: 0;
+                box-sizing: border-box;
+            }
+            body {
+                font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+                min-height: 100vh;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                color: white;
+                overflow-x: hidden;
+            }
+            .container {
+                text-align: center;
+                max-width: 700px;
+                padding: 2rem;
+                background: rgba(255, 255, 255, 0.15);
+                border-radius: 20px;
+                backdrop-filter: blur(15px);
+                box-shadow: 0 15px 50px rgba(0, 0, 0, 0.3);
+                border: 1px solid rgba(255, 255, 255, 0.2);
+                position: relative;
+                overflow: hidden;
+                margin: 0.5rem;
+            }
+            .container::before {
+                content: '';
+                position: absolute;
+                top: 0;
+                left: 0;
+                right: 0;
+                height: 4px;
+                background: linear-gradient(90deg, #ff6b6b, #4ecdc4, #45b7d1, #96ceb4);
+            }
+            .logo-img {
+                max-width: 80px;
+                height: auto;
+                margin-bottom: 1rem;
+                filter: drop-shadow(0 8px 16px rgba(0, 0, 0, 0.4));
+                animation: float 3s ease-in-out infinite;
+            }
+            @keyframes float {
+                0%, 100% { transform: translateY(0px); }
+                50% { transform: translateY(-10px); }
+            }
+            h1 {
+                font-size: 2rem;
+                margin-bottom: 0.5rem;
+                text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.4);
+                background: linear-gradient(45deg, #fff, #e3f2fd);
+                -webkit-background-clip: text;
+                -webkit-text-fill-color: transparent;
+                background-clip: text;
+                font-weight: 700;
+            }
+            .subtitle {
+                font-size: 1rem;
+                margin-bottom: 1rem;
+                opacity: 0.95;
+                font-weight: 300;
+                letter-spacing: 1px;
+            }
+            .description {
+                font-size: 0.9rem;
+                line-height: 1.5;
+                margin-bottom: 1.5rem;
+                opacity: 0.9;
+                max-width: 450px;
+                margin-left: auto;
+                margin-right: auto;
+            }
+            .features {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+                gap: 0.6rem;
+                margin-bottom: 1.5rem;
+            }
+            .feature {
+                background: rgba(255, 255, 255, 0.1);
+                padding: 0.6rem;
+                border-radius: 8px;
+                border: 1px solid rgba(255, 255, 255, 0.2);
+                transition: transform 0.3s ease;
+            }
+            .feature:hover {
+                transform: translateY(-5px);
+                background: rgba(255, 255, 255, 0.15);
+            }
+            .feature-icon {
+                font-size: 2rem;
+                margin-bottom: 1rem;
+            }
+            .feature-title {
+                font-size: 1.1rem;
+                font-weight: 600;
+                margin-bottom: 0.5rem;
+            }
+            .feature-desc {
+                font-size: 0.9rem;
+                opacity: 0.8;
+            }
+            .links {
+                display: flex;
+                gap: 0.8rem;
+                justify-content: center;
+                flex-wrap: wrap;
+                margin-bottom: 1rem;
+            }
+            .link-btn {
+                display: inline-block;
+                padding: 10px 20px;
+                background: linear-gradient(45deg, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.1));
+                color: white;
+                text-decoration: none;
+                border-radius: 20px;
+                border: 2px solid rgba(255, 255, 255, 0.3);
+                transition: all 0.3s ease;
+                font-weight: 600;
+                font-size: 0.8rem;
+                position: relative;
+                overflow: hidden;
+            }
+            .link-btn::before {
+                content: '';
+                position: absolute;
+                top: 0;
+                left: -100%;
+                width: 100%;
+                height: 100%;
+                background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+                transition: left 0.5s;
+            }
+            .link-btn:hover::before {
+                left: 100%;
+            }
+            .link-btn:hover {
+                background: linear-gradient(45deg, rgba(255, 255, 255, 0.3), rgba(255, 255, 255, 0.2));
+                border-color: rgba(255, 255, 255, 0.5);
+                transform: translateY(-3px);
+                box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+            }
+            .footer {
+                margin-top: 2rem;
+                font-size: 0.9rem;
+                opacity: 0.8;
+                border-top: 1px solid rgba(255, 255, 255, 0.2);
+                padding-top: 1.5rem;
+            }
+            .stats {
+                display: flex;
+                justify-content: center;
+                gap: 1rem;
+                margin: 1rem 0;
+                flex-wrap: wrap;
+            }
+            .stat {
+                text-align: center;
+            }
+            .stat-number {
+                font-size: 1.2rem;
+                font-weight: 700;
+                color: #4ecdc4;
+                text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+            }
+            .stat-label {
+                font-size: 0.7rem;
+                opacity: 0.8;
+            }
+            @media (max-width: 768px) {
+                .container {
+                    margin: 0.5rem;
+                    padding: 1.5rem;
+                }
+                h1 {
+                    font-size: 2.2rem;
+                }
+                .links {
+                    flex-direction: column;
+                    align-items: center;
+                }
+                .features {
+                    grid-template-columns: 1fr;
+                    gap: 0.8rem;
+                }
+                .feature {
+                    padding: 0.8rem;
+                }
+                .stats {
+                    gap: 1rem;
+                }
+            }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <img src="/static/logo-banten.png" alt="Logo Banten" class="logo-img">
+            <h1>API Manager</h1>
+            <p class="subtitle">Pemerintah Provinsi Banten</p>
+            <p class="description">
+                Platform manajemen API terintegrasi untuk mendukung digitalisasi 
+                layanan publik di Provinsi Banten. Kelola, monitor, dan amankan 
+                API dengan mudah dan efisien.
+            </p>
+            
+            <div class="stats">
+                <div class="stat">
+                    <div class="stat-number">100+</div>
+                    <div class="stat-label">API Terkelola</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-number">99.9%</div>
+                    <div class="stat-label">Uptime</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-number">24/7</div>
+                    <div class="stat-label">Monitoring</div>
+                </div>
+            </div>
+
+            <div class="features">
+                <div class="feature">
+                    <div class="feature-icon">🔐</div>
+                    <div class="feature-title">Keamanan Tinggi</div>
+                    <div class="feature-desc">Enkripsi end-to-end dan autentikasi multi-layer</div>
+                </div>
+                <div class="feature">
+                    <div class="feature-icon">📊</div>
+                    <div class="feature-title">Analytics Real-time</div>
+                    <div class="feature-desc">Monitoring performa dan usage analytics</div>
+                </div>
+                <div class="feature">
+                    <div class="feature-icon">⚡</div>
+                    <div class="feature-title">High Performance</div>
+                    <div class="feature-desc">Response time optimal dan skalabilitas tinggi</div>
+                </div>
+            </div>
+
+            <div class="links">
+                <a href="/api-docs" class="link-btn">📚 API Documentation</a>
+                <a href="/health" class="link-btn">🏥 Health Check</a>
+                <a href="https://apimanager.bantenprov.go.id" class="link-btn">🌐 Dashboard</a>
+            </div>
+            
+            <div class="footer">
+                <p>&copy; 2025 Pemerintah Provinsi Banten. All rights reserved.</p>
+                <p style="margin-top: 0.5rem; font-size: 0.8rem;">Membangun Banten Digital yang Berkelanjutan</p>
+            </div>
+        </div>
+    </body>
+    </html>
+  `);
+});
+
 // Health check endpoint
 app.get('/health', (req, res) => {
   res.status(200).json({
